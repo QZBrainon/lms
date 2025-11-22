@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Redirecting...</title>
+    <script>
+      // GitHub Pages SPA redirect hack
+      // When a 404 occurs, this script redirects to index.html with the path preserved
+      const pathSegmentsToKeep = 1; // Keep '/lms' segment
+
+      const location = window.location;
+      const pathSegments = location.pathname.split('/').filter(segment => segment);
+
+      // Redirect to index.html with the path stored in sessionStorage
+      // The index.html will read this and navigate to the correct route
+      sessionStorage.setItem('redirectPath', location.pathname + location.search + location.hash);
+
+      // Redirect to the base path
+      location.replace(
+        location.protocol + '//' + location.host + '/' +
+        pathSegments.slice(0, pathSegmentsToKeep).join('/') +
+        '/?redirect=' + encodeURIComponent(location.pathname + location.search + location.hash)
+      );
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>

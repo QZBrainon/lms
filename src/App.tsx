@@ -1,7 +1,8 @@
 import "./App.css";
 import "@blocknote/core/fonts/inter.css";
 import "@blocknote/shadcn/style.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -22,9 +23,28 @@ import CheckoutCancel from "./pages/CheckoutCancel";
 import Subscriptions from "./pages/Subscriptions";
 import RefundPolicy from "./pages/RefundPolicy";
 
+// Component to handle GitHub Pages SPA redirect
+function RedirectHandler() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if there's a redirect path stored by 404.html
+    const redirectPath = sessionStorage.getItem('redirectPath');
+    if (redirectPath) {
+      sessionStorage.removeItem('redirectPath');
+      // Remove the /lms prefix if present (basename handles it)
+      const path = redirectPath.replace('/lms', '') || '/';
+      navigate(path, { replace: true });
+    }
+  }, [navigate]);
+
+  return null;
+}
+
 function App() {
   return (
     <BrowserRouter basename="/lms">
+      <RedirectHandler />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
