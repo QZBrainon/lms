@@ -234,6 +234,13 @@ serve(async (req) => {
 
         console.log('Subscription deleted:', subscription.id)
 
+        // Get the course_id before updating the subscription
+        const { data: subscriptionData } = await supabase
+          .from('subscriptions')
+          .select('course_id')
+          .eq('stripe_subscription_id', subscription.id)
+          .single()
+
         // Mark subscription as cancelled (this happens when subscription actually expires)
         const { error } = await supabase
           .from('subscriptions')
@@ -244,6 +251,19 @@ serve(async (req) => {
           console.error('Error cancelling subscription:', error)
         } else {
           console.log('Subscription cancelled successfully')
+
+          // Decrement course members count
+          if (subscriptionData?.course_id) {
+            const { error: rpcError } = await supabase.rpc('decrement_course_members', {
+              p_course_id: subscriptionData.course_id,
+            })
+
+            if (rpcError) {
+              console.error('Error decrementing members:', rpcError)
+            } else {
+              console.log('Course members decremented')
+            }
+          }
         }
 
         break
@@ -274,6 +294,13 @@ serve(async (req) => {
                 // Continue to update database even if Stripe cancel fails
               }
 
+              // Get the course_id before updating
+              const { data: subscriptionData } = await supabase
+                .from('subscriptions')
+                .select('course_id')
+                .eq('stripe_subscription_id', invoice.subscription as string)
+                .single()
+
               // Update database: mark as cancelled and revoke access
               const { error } = await supabase
                 .from('subscriptions')
@@ -287,6 +314,20 @@ serve(async (req) => {
                 console.error('Error updating subscription after refund:', error)
               } else {
                 console.log('Subscription cancelled and access revoked due to refund')
+
+                // Decrement course members count
+                if (subscriptionData?.course_id) {
+                  const { error: rpcError } = await supabase.rpc('decrement_course_members', {
+                    p_course_id: subscriptionData.course_id,
+                  })
+
+                  if (rpcError) {
+                    console.error('Error decrementing members:', rpcError)
+                  } else {
+                    console.log('Course members decremented after refund')
+                  }
+                }
+
                 // TODO: Send email notification about refund processed
               }
             } else {
@@ -320,6 +361,13 @@ serve(async (req) => {
             if (invoice.subscription) {
               console.log('Found subscription for dispute:', invoice.subscription)
 
+              // Get the course_id before updating
+              const { data: subscriptionData } = await supabase
+                .from('subscriptions')
+                .select('course_id')
+                .eq('stripe_subscription_id', invoice.subscription as string)
+                .single()
+
               // Update database: mark as disputed and suspend access immediately
               const { error } = await supabase
                 .from('subscriptions')
@@ -333,6 +381,20 @@ serve(async (req) => {
                 console.error('Error updating subscription after dispute:', error)
               } else {
                 console.log('Subscription marked as disputed, access suspended')
+
+                // Decrement course members count
+                if (subscriptionData?.course_id) {
+                  const { error: rpcError } = await supabase.rpc('decrement_course_members', {
+                    p_course_id: subscriptionData.course_id,
+                  })
+
+                  if (rpcError) {
+                    console.error('Error decrementing members:', rpcError)
+                  } else {
+                    console.log('Course members decremented after dispute')
+                  }
+                }
+
                 // TODO: Alert admin about dispute (email/Slack notification)
                 // TODO: Gather evidence to respond to dispute in Stripe Dashboard
               }

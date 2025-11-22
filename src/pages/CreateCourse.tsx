@@ -238,15 +238,26 @@ function CreateCourse() {
                   </span>
                   <Input
                     id="price"
-                    type="number"
-                    min="0"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
                     placeholder="0.00"
                     className="pl-7"
                     value={formData.price}
-                    onChange={(e) =>
-                      setFormData({ ...formData, price: e.target.value })
-                    }
+                    onChange={(e) => {
+                      // Only allow numbers and one decimal point
+                      const value = e.target.value;
+                      if (value === '' || /^\d*\.?\d{0,2}$/.test(value)) {
+                        setFormData({ ...formData, price: value });
+                      }
+                    }}
+                    onBlur={(e) => {
+                      // Format to 2 decimal places on blur if there's a value
+                      const value = e.target.value;
+                      if (value && !isNaN(parseFloat(value))) {
+                        const formatted = parseFloat(value).toFixed(2);
+                        setFormData({ ...formData, price: formatted });
+                      }
+                    }}
                     required
                   />
                 </div>
