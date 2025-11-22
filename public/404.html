@@ -4,26 +4,26 @@
     <meta charset="utf-8" />
     <title>Redirecting...</title>
     <script>
-      // GitHub Pages SPA redirect hack
-      // When a 404 occurs, this script redirects to index.html with the path preserved
-      const pathSegmentsToKeep = 1; // Keep '/lms' segment
+      // Single Page Apps for GitHub Pages
+      // https://github.com/rafgraph/spa-github-pages
+      // This script takes the current url and converts the path and query
+      // string into just a query string, and then redirects the browser
+      // to the new url with only a query string and hash fragment
 
-      const location = window.location;
-      const pathSegments = location.pathname.split('/').filter(segment => segment);
+      // Store the path before redirecting
+      var l = window.location;
+      sessionStorage.setItem('redirectPath', l.pathname + l.search + l.hash);
 
-      // Redirect to index.html with the path stored in sessionStorage
-      // The index.html will read this and navigate to the correct route
-      sessionStorage.setItem('redirectPath', location.pathname + location.search + location.hash);
-
-      // Redirect to the base path
-      location.replace(
-        location.protocol + '//' + location.host + '/' +
-        pathSegments.slice(0, pathSegmentsToKeep).join('/') +
-        '/?redirect=' + encodeURIComponent(location.pathname + location.search + location.hash)
+      // Redirect to index.html with the path as a query parameter
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 2).join('/') + '/index.html' +
+        '?p=' + l.pathname.slice(1).split('/').slice(1).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
       );
     </script>
   </head>
   <body>
-    <p>Redirecting...</p>
   </body>
 </html>
