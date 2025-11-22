@@ -24,7 +24,7 @@ import RefundPolicy from "./pages/RefundPolicy";
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/lms">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
